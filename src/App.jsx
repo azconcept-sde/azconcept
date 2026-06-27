@@ -6,7 +6,6 @@ import {
   LogOut, Eye as EyeIcon, EyeOff, Pencil, Trash2, ImagePlus,
   Save, AlertCircle, CreditCard
 } from "lucide-react";
-import { supabase } from "./supabase";
 
 const B = {
   orange:"#FF8321", pink:"#FF63CF",
@@ -26,12 +25,12 @@ const USERS = {
 };
 
 const DEFAULT_PRODUCTS = [
-  { name:"Funda iPhone",       desc:"Funda personalizada para iPhone, resistente y con tu diseño exclusivo.",       cat:"Fundas",            price:8500,  cost:2800, views:342, sales:89, stock:15, icon:"📱", bg:"linear-gradient(145deg,#FF8321,#CC6200)",   photo:null },
-  { name:"Funda Samsung",      desc:"Funda a medida para Samsung, hecha con materiales de calidad.",                cat:"Fundas",            price:7500,  cost:2500, views:287, sales:64, stock:12, icon:"📱", bg:"linear-gradient(145deg,#FF63CF,#CC2E9E)",   photo:null },
-  { name:'Porta Mac 13"',      desc:'Porta notebook artesanal para Mac 13", acolchado y resistente.',               cat:"Porta Computadora", price:18000, cost:6500, views:198, sales:43, stock:8,  icon:"💻", bg:"linear-gradient(145deg,#1A1A1A,#3D3D3D)",   photo:null },
-  { name:"Mouse Pad XL",       desc:"Mouse pad de gran superficie con diseño exclusivo AZ Concept.",                cat:"Mouse Pad",         price:5500,  cost:1800, views:156, sales:38, stock:20, icon:"🖱️", bg:"linear-gradient(145deg,#FFB066,#FF8321)",   photo:null },
-  { name:"Neceser Concept",    desc:"Neceser de tela resistente personalizado, ideal para el día a día.",           cat:"Neceser",           price:9500,  cost:3200, views:231, sales:52, stock:10, icon:"👜", bg:"linear-gradient(145deg,#FF8321,#FF63CF)",   photo:null },
-  { name:'Porta Notebook 15"', desc:'Porta notebook artesanal para 15", protección con identidad propia.',         cat:"Porta Computadora", price:20000, cost:7200, views:124, sales:31, stock:6,  icon:"💼", bg:"linear-gradient(145deg,#1A1A1A,#FF8321)",   photo:null },
+  { name:"Funda iPhone",       description:"Funda personalizada para iPhone, resistente y con tu diseño exclusivo.",       cat:"Fundas",            price:8500,  cost:2800, views:342, sales:89, stock:15, icon:"📱", bg:"linear-gradient(145deg,#FF8321,#CC6200)",   photo:null },
+  { name:"Funda Samsung",      description:"Funda a medida para Samsung, hecha con materiales de calidad.",                cat:"Fundas",            price:7500,  cost:2500, views:287, sales:64, stock:12, icon:"📱", bg:"linear-gradient(145deg,#FF63CF,#CC2E9E)",   photo:null },
+  { name:'Porta Mac 13"',      description:'Porta notebook artesanal para Mac 13", acolchado y resistente.',               cat:"Porta Computadora", price:18000, cost:6500, views:198, sales:43, stock:8,  icon:"💻", bg:"linear-gradient(145deg,#1A1A1A,#3D3D3D)",   photo:null },
+  { name:"Mouse Pad XL",       description:"Mouse pad de gran superficie con diseño exclusivo AZ Concept.",                cat:"Mouse Pad",         price:5500,  cost:1800, views:156, sales:38, stock:20, icon:"🖱️", bg:"linear-gradient(145deg,#FFB066,#FF8321)",   photo:null },
+  { name:"Neceser Concept",    description:"Neceser de tela resistente personalizado, ideal para el día a día.",           cat:"Neceser",           price:9500,  cost:3200, views:231, sales:52, stock:10, icon:"👜", bg:"linear-gradient(145deg,#FF8321,#FF63CF)",   photo:null },
+  { name:'Porta Notebook 15"', description:'Porta notebook artesanal para 15", protección con identidad propia.',         cat:"Porta Computadora", price:20000, cost:7200, views:124, sales:31, stock:6,  icon:"💼", bg:"linear-gradient(145deg,#1A1A1A,#FF8321)",   photo:null },
 ];
 
 const MONTHLY = [
@@ -52,46 +51,66 @@ const GRADIENTS = [
 
 const fmt = n => new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0}).format(n);
 
-// ─── Supabase helpers ─────────────────────────────────────────────────────────
+// ─── Supabase REST helpers ────────────────────────────────────────────────────
+const SB_URL = "https://fwynwohdkwpnqxflwqcj.supabase.co/rest/v1";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3eW53b2hka3dwbnF4Zmx3cWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDEwMTcsImV4cCI6MjA5ODA3NzAxN30.BwgpwPewKQPl4yJ77q1qjYTf5OXgWBX0XRUzyN4yhb4";
+const SB_H = { "Content-Type":"application/json", "apikey":SB_KEY, "Authorization":`Bearer ${SB_KEY}` };
 
 async function sbGetProducts() {
-  const { data, error } = await supabase.from("products").select("*").order("created_at");
-  if (error) throw error;
-  return data;
+  const r = await fetch(`${SB_URL}/products?select=*&order=id`, { headers: SB_H });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 
 async function sbSeedProducts(prods) {
-  const { error } = await supabase.from("products").insert(prods);
-  if (error) throw error;
+  const r = await fetch(`${SB_URL}/products`, {
+    method:"POST", headers:{...SB_H,"Prefer":"return=minimal"},
+    body: JSON.stringify(prods)
+  });
+  if (!r.ok) throw new Error(await r.text());
 }
 
 async function sbUpsertProduct(product) {
   const { id, ...data } = product;
   if (id) {
-    const { error } = await supabase.from("products").update(data).eq("id", id);
-    if (error) throw error;
+    const r = await fetch(`${SB_URL}/products?id=eq.${id}`, {
+      method:"PATCH", headers:{...SB_H,"Prefer":"return=minimal"},
+      body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(await r.text());
     return id;
   } else {
-    const { data: rows, error } = await supabase.from("products").insert(data).select();
-    if (error) throw error;
+    const r = await fetch(`${SB_URL}/products`, {
+      method:"POST", headers:{...SB_H,"Prefer":"return=representation"},
+      body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const rows = await r.json();
     return rows[0].id;
   }
 }
 
 async function sbDeleteProduct(id) {
-  const { error } = await supabase.from("products").delete().eq("id", id);
-  if (error) throw error;
+  const r = await fetch(`${SB_URL}/products?id=eq.${id}`, {
+    method:"DELETE", headers: SB_H
+  });
+  if (!r.ok) throw new Error(await r.text());
 }
 
 async function sbGetConfig(key) {
-  const { data, error } = await supabase.from("config").select("value").eq("key", key).single();
-  if (error) return null;
-  return data?.value ?? null;
+  const r = await fetch(`${SB_URL}/config?select=value&key=eq.${encodeURIComponent(key)}&limit=1`, { headers: SB_H });
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return rows[0]?.value ?? null;
 }
 
 async function sbSetConfig(key, value) {
-  const { error } = await supabase.from("config").upsert({ key, value }, { onConflict: "key" });
-  if (error) throw error;
+  const r = await fetch(`${SB_URL}/config`, {
+    method:"POST",
+    headers:{...SB_H,"Prefer":"resolution=merge-duplicates,return=minimal"},
+    body: JSON.stringify({ key, value })
+  });
+  if (!r.ok) throw new Error(await r.text());
 }
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -266,13 +285,13 @@ export default function App() {
   // ── Product Editor ────────────────────────────────────────────────────────
   const openEdit = (p) => {
     setEditingProduct(p);
-    setEditForm({name:p.name,desc:p.desc||"",cat:p.cat,price:p.price,cost:p.cost,stock:p.stock,icon:p.icon,bg:p.bg});
+    setEditForm({name:p.name,description:p.description||"",cat:p.cat,price:p.price,cost:p.cost,stock:p.stock,icon:p.icon,bg:p.bg});
     setEditPhoto(p.photo||null);
     setEditError("");
   };
 
   const openNew = () => {
-    const newP = {id:null,name:"",desc:"",cat:"",price:0,cost:0,stock:0,icon:"🛍️",bg:GRADIENTS[0],views:0,sales:0,photo:null};
+    const newP = {id:null,name:"","description":"",cat:"",price:0,cost:0,stock:0,icon:"🛍️",bg:GRADIENTS[0],views:0,sales:0,photo:null};
     setShowNewProduct(true);
     openEdit(newP);
   };
@@ -425,7 +444,7 @@ export default function App() {
                 <div style={{padding:20}}>
                   <span style={{fontSize:10,color:B.muted,textTransform:"uppercase",letterSpacing:1.5,fontWeight:700}}>{p.cat}</span>
                   <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:19,margin:"6px 0 4px"}}>{p.name}</h3>
-                  <p style={{fontSize:13,color:B.muted,fontWeight:400,marginBottom:16,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.desc}</p>
+                  <p style={{fontSize:13,color:B.muted,fontWeight:400,marginBottom:16,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.description}</p>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:20,color:B.orange}}>{fmt(p.price)}</span>
                     <button style={{background:B.ink,color:B.white,border:"none",borderRadius:6,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Nunito Sans',sans-serif"}}>Personalizar</button>
@@ -468,7 +487,7 @@ export default function App() {
             <div style={{padding:28}}>
               <span style={{fontSize:10,color:B.muted,textTransform:"uppercase",letterSpacing:1.5,fontWeight:700}}>{selected.cat}</span>
               <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:24,margin:"6px 0 10px"}}>{selected.name}</h2>
-              <p style={{color:B.muted,fontWeight:400,marginBottom:24,fontSize:14,lineHeight:1.75}}>{selected.desc||"Cada pieza es 100% personalizada. Contanos tu idea: nombre, frase, colores o imagen de referencia."}</p>
+              <p style={{color:B.muted,fontWeight:400,marginBottom:24,fontSize:14,lineHeight:1.75}}>{selected.description||"Cada pieza es 100% personalizada. Contanos tu idea: nombre, frase, colores o imagen de referencia."}</p>
               <div style={{background:B.bg,borderRadius:10,padding:16,marginBottom:24,border:`1px solid ${B.line}`}}>
                 <label style={{fontSize:13,fontWeight:700,display:"block",marginBottom:8}}>✦ ¿Qué querés que lleve tu diseño?</label>
                 <textarea value={customText} onChange={e=>setCustomText(e.target.value)} placeholder='Ej: "Mi nombre + flores vintage", colores nude...'
@@ -779,7 +798,7 @@ export default function App() {
                     <div style={{padding:16}}>
                       <span style={{fontSize:10,color:B.muted,textTransform:"uppercase",letterSpacing:1.5,fontWeight:700}}>{p.cat}</span>
                       <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:17,margin:"4px 0 6px"}}>{p.name}</h3>
-                      <p style={{fontSize:12,color:B.muted,lineHeight:1.5,marginBottom:12,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.desc}</p>
+                      <p style={{fontSize:12,color:B.muted,lineHeight:1.5,marginBottom:12,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.description}</p>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
                         <span style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,color:B.orange}}>{fmt(p.price)}</span>
                         <span style={{fontSize:12,color:B.muted}}>Stock: <strong>{p.stock}</strong></span>
@@ -954,7 +973,7 @@ export default function App() {
               </div>
               <div>
                 <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Descripción</label>
-                <textarea value={editForm.desc||""} onChange={e=>setEditForm(f=>({...f,desc:e.target.value}))} placeholder="Describí el producto..." style={{...inp,resize:"vertical",minHeight:90}}/>
+                <textarea value={editForm.description||""} onChange={e=>setEditForm(f=>({...f,description:e.target.value}))} placeholder="Describí el producto..." style={{...inp,resize:"vertical",minHeight:90}}/>
               </div>
               <div>
                 <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Categoría</label>
