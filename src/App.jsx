@@ -185,6 +185,19 @@ export default function App() {
   const [configSaving,   setConfigSaving]   = useState(false);
   const [configSaved,    setConfigSaved]    = useState(false);
 
+  const DEFAULT_DESIGN = {
+    colorOrange: "#FF8321", colorPink: "#FF63CF",
+    colorInk: "#1A1A1A", colorBg: "#FAFAFA",
+    fontTitle: "Bricolage Grotesque", fontBody: "Nunito Sans",
+    heroTitle: "Objetos unicos\nhechos para vos.",
+    heroSub: "Fundas, porta computadoras, mouse pads y necesers personalizados con tu diseno.",
+    heroBtn: "Explorar coleccion",
+  };
+  const [design,       setDesign]       = useState(DEFAULT_DESIGN);
+  const [designSaving, setDesignSaving] = useState(false);
+  const [designSaved,  setDesignSaved]  = useState(false);
+  const [designForm,   setDesignForm]   = useState(DEFAULT_DESIGN);
+
   const photoInputRef = useRef();
 
   // ── Cargar datos desde Supabase ──────────────────────────────────────────
@@ -206,6 +219,10 @@ export default function App() {
         const key = await sbGetConfig("mpkey");
         if (key) setMpKey(key);
       } catch {}
+      try {
+        const d = await sbGetConfig("design");
+        if (d) { const parsed = JSON.parse(d); setDesign(parsed); setDesignForm(parsed); }
+      } catch {}
       setLoadingData(false);
     })();
   },[]);
@@ -219,6 +236,30 @@ export default function App() {
       setTimeout(()=>setConfigSaved(false), 2500);
     } catch(e) { console.error(e); }
     setConfigSaving(false);
+  };
+
+  const saveDesign = async () => {
+    setDesignSaving(true);
+    try {
+      await sbSetConfig("design", JSON.stringify(designForm));
+      setDesign(designForm);
+      setDesignSaved(true);
+      setTimeout(()=>setDesignSaved(false), 2500);
+    } catch(e) { console.error(e); }
+    setDesignSaving(false);
+  };
+
+  const D = design; // shorthand for current design values
+  const moveProduct = (id, dir) => {
+    setProducts(prev => {
+      const idx = prev.findIndex(p => p.id === id);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      const swap = idx + dir;
+      if (swap < 0 || swap >= next.length) return prev;
+      [next[idx], next[swap]] = [next[swap], next[idx]];
+      return next;
+    });
   };
 
   // ── Cart ──────────────────────────────────────────────────────────────────
@@ -415,11 +456,11 @@ export default function App() {
             <div style={{position:"relative"}}>
               <AZLogo size="lg"/>
               <p style={{fontFamily:"'Nunito Sans',sans-serif",fontSize:11,letterSpacing:4,textTransform:"uppercase",margin:"22px auto 14px",color:B.ink,opacity:.6,fontWeight:600}}>@azconcept.ar · Santiago del Estero</p>
-              <h1 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:"clamp(36px,5.5vw,66px)",lineHeight:1.08,color:B.ink,margin:"0 auto 18px",maxWidth:640}}>
-                Objetos únicos<br/>hechos para vos.
+              <h1 style={{fontFamily:`'${design.fontTitle}',sans-serif`,fontWeight:800,fontSize:"clamp(36px,5.5vw,66px)",lineHeight:1.08,color:design.colorInk,margin:"0 auto 18px",maxWidth:640}}>
+                {design.heroTitle.split("\n").map((l,i)=><span key={i}>{l}{i<design.heroTitle.split("\n").length-1&&<br/>}</span>)}
               </h1>
-              <p style={{fontWeight:400,fontSize:16,color:B.ink,opacity:.65,maxWidth:440,margin:"0 auto 36px",lineHeight:1.7}}>Fundas, porta computadoras, mouse pads y necesers personalizados con tu diseño.</p>
-              <button onClick={()=>document.getElementById("productos").scrollIntoView({behavior:"smooth"})} style={{...btnDark,padding:"14px 38px",fontSize:15}}>Explorar colección ✦</button>
+              <p style={{fontWeight:400,fontSize:16,color:design.colorInk,opacity:.65,maxWidth:440,margin:"0 auto 36px",lineHeight:1.7}}>{design.heroSub}</p>
+              <button onClick={()=>document.getElementById("productos").scrollIntoView({behavior:"smooth"})} style={{...btnDark,padding:"14px 38px",fontSize:15,background:design.colorInk}}>{design.heroBtn}</button>
             </div>
           </section>
 
@@ -717,7 +758,7 @@ export default function App() {
           </div>
 
           <div style={{display:"flex",gap:4,background:B.arena,borderRadius:12,padding:5,marginBottom:28,width:"fit-content",flexWrap:"wrap"}}>
-            {[["metricas","📊 Métricas"],["productos","📦 Productos"],["costos","💰 Costos"],["config","⚙️ Configuración"]].map(([id,label])=>(
+            {[["metricas","📊 Métricas"],["productos","📦 Productos"],["costos","💰 Costos"],["diseno","🎨 Diseño"],["config","⚙️ Configuración"]].map(([id,label])=>(
               <button key={id} onClick={()=>setPanelTab(id)}
                 style={{padding:"9px 20px",borderRadius:8,border:"none",background:panelTab===id?B.ink:"none",fontWeight:panelTab===id?700:500,color:panelTab===id?B.white:B.ink,cursor:"pointer",fontSize:13,transition:"all .15s",fontFamily:"'Nunito Sans',sans-serif"}}>
                 {label}
@@ -879,7 +920,122 @@ export default function App() {
             </>
           )}
 
-          {panelTab==="config"&&(
+          {panelTab==="diseno"&&(
+            <div style={{maxWidth:700}}>
+              {designSaved&&(
+                <div style={{background:"#DCFCE7",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:8,border:"1px solid #BBF7D0"}}>
+                  <Check size={16} color="#16A34A"/><span style={{fontSize:13,color:"#15803D",fontWeight:600}}>¡Diseño guardado! Los cambios ya se ven en la tienda.</span>
+                </div>
+              )}
+
+              {/* COLORES */}
+              <div style={{background:B.white,borderRadius:14,padding:24,marginBottom:20,boxShadow:"0 2px 14px rgba(0,0,0,0.06)"}}>
+                <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,marginBottom:4}}>🎨 Colores</h3>
+                <p style={{color:B.muted,fontSize:13,marginBottom:20}}>Los colores principales de la tienda.</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                  {[
+                    ["colorOrange","Color principal (naranja)"],
+                    ["colorPink","Color secundario (rosa)"],
+                    ["colorInk","Color de texto"],
+                    ["colorBg","Color de fondo"],
+                  ].map(([key,label])=>(
+                    <div key={key}>
+                      <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:8,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>{label}</label>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <input type="color" value={designForm[key]} onChange={e=>setDesignForm(f=>({...f,[key]:e.target.value}))}
+                          style={{width:44,height:44,border:`1.5px solid ${B.line}`,borderRadius:8,cursor:"pointer",padding:2}}/>
+                        <input value={designForm[key]} onChange={e=>setDesignForm(f=>({...f,[key]:e.target.value}))}
+                          style={{...inp,fontFamily:"monospace",fontSize:13,flex:1}}/>
+                      </div>
+                      <div style={{marginTop:8,height:32,borderRadius:7,background:designForm[key],border:`1px solid ${B.line}`}}/>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* TIPOGRAFÍAS */}
+              <div style={{background:B.white,borderRadius:14,padding:24,marginBottom:20,boxShadow:"0 2px 14px rgba(0,0,0,0.06)"}}>
+                <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,marginBottom:4}}>✍️ Tipografías</h3>
+                <p style={{color:B.muted,fontSize:13,marginBottom:20}}>Fuentes de Google Fonts. Escribí el nombre exacto.</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                  {[
+                    ["fontTitle","Fuente de títulos","Bricolage Grotesque"],
+                    ["fontBody","Fuente de texto","Nunito Sans"],
+                  ].map(([key,label,ph])=>(
+                    <div key={key}>
+                      <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>{label}</label>
+                      <input value={designForm[key]} onChange={e=>setDesignForm(f=>({...f,[key]:e.target.value}))} placeholder={ph} style={inp}/>
+                      <p style={{marginTop:8,fontSize:18,fontFamily:`'${designForm[key]}',sans-serif`,color:B.ink}}>AZ Concept — El texto se ve así</p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{background:"#EFF9FF",borderRadius:8,padding:12,marginTop:16,border:"1px solid #BAE6FD"}}>
+                  <p style={{fontSize:12,color:"#0369A1",lineHeight:1.6}}>💡 Buscá fuentes en <strong>fonts.google.com</strong> y copiá el nombre exacto. Ej: "Playfair Display", "Poppins", "Montserrat"</p>
+                </div>
+              </div>
+
+              {/* TEXTOS DEL HERO */}
+              <div style={{background:B.white,borderRadius:14,padding:24,marginBottom:20,boxShadow:"0 2px 14px rgba(0,0,0,0.06)"}}>
+                <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,marginBottom:4}}>✦ Textos de la portada</h3>
+                <p style={{color:B.muted,fontSize:13,marginBottom:20}}>Lo primero que ven tus clientes.</p>
+                <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                  <div>
+                    <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Título principal</label>
+                    <textarea value={designForm.heroTitle} onChange={e=>setDesignForm(f=>({...f,heroTitle:e.target.value}))}
+                      placeholder="Objetos únicos
+hechos para vos." style={{...inp,resize:"vertical",minHeight:70}}/>
+                    <p style={{fontSize:11,color:B.muted,marginTop:4}}>Usá 
+ para hacer un salto de línea</p>
+                  </div>
+                  <div>
+                    <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Subtítulo</label>
+                    <textarea value={designForm.heroSub} onChange={e=>setDesignForm(f=>({...f,heroSub:e.target.value}))}
+                      style={{...inp,resize:"vertical",minHeight:60}}/>
+                  </div>
+                  <div>
+                    <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Texto del botón</label>
+                    <input value={designForm.heroBtn} onChange={e=>setDesignForm(f=>({...f,heroBtn:e.target.value}))} style={inp}/>
+                  </div>
+                </div>
+              </div>
+
+              {/* ORDEN DE PRODUCTOS */}
+              <div style={{background:B.white,borderRadius:14,padding:24,marginBottom:24,boxShadow:"0 2px 14px rgba(0,0,0,0.06)"}}>
+                <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,marginBottom:4}}>📦 Orden de productos</h3>
+                <p style={{color:B.muted,fontSize:13,marginBottom:20}}>Usá las flechas para cambiar el orden en la tienda.</p>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {products.map((p,i)=>(
+                    <div key={p.id} style={{display:"flex",alignItems:"center",gap:12,background:B.bg,borderRadius:10,padding:"10px 14px",border:`1px solid ${B.line}`}}>
+                      <span style={{fontSize:18,flexShrink:0}}>{p.icon}</span>
+                      <span style={{flex:1,fontWeight:700,fontSize:14}}>{p.name}</span>
+                      <span style={{fontSize:12,color:B.muted,marginRight:8}}>{p.cat}</span>
+                      <div style={{display:"flex",gap:4}}>
+                        <button onClick={()=>moveProduct(p.id,-1)} disabled={i===0}
+                          style={{background:i===0?B.line:B.ink,color:"white",border:"none",borderRadius:6,width:28,height:28,cursor:i===0?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>↑</button>
+                        <button onClick={()=>moveProduct(p.id,1)} disabled={i===products.length-1}
+                          style={{background:i===products.length-1?B.line:B.ink,color:"white",border:"none",borderRadius:6,width:28,height:28,cursor:i===products.length-1?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>↓</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* PREVIEW + GUARDAR */}
+              <div style={{background:`linear-gradient(135deg,${designForm.colorOrange},${designForm.colorPink})`,borderRadius:14,padding:24,marginBottom:20,color:"white",textAlign:"center"}}>
+                <p style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:8,opacity:.85}}>Preview de colores</p>
+                <p style={{fontFamily:`'${designForm.fontTitle}',sans-serif`,fontWeight:800,fontSize:28,marginBottom:4}}>{designForm.heroTitle.split("\n")[0]}</p>
+                <p style={{fontFamily:`'${designForm.fontBody}',sans-serif`,fontSize:14,opacity:.85}}>{designForm.heroSub.slice(0,60)}...</p>
+                <div style={{marginTop:16,display:"inline-block",background:designForm.colorInk,borderRadius:8,padding:"10px 22px",fontWeight:700,fontSize:14}}>{designForm.heroBtn}</div>
+              </div>
+
+              <button onClick={saveDesign} disabled={designSaving}
+                style={{...btnDark,width:"100%",padding:14,borderRadius:10,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,opacity:designSaving?.6:1}}>
+                <Save size={18}/> {designSaving?"Guardando...":"Guardar diseño"}
+              </button>
+            </div>
+          )}
+
+                    {panelTab==="config"&&(
             <div style={{maxWidth:560}}>
               <div style={card}>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
