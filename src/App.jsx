@@ -174,6 +174,8 @@ export default function App() {
   const [catFilter,  setCatFilter]  = useState("Todos");
   const [checkout,   setCheckout]   = useState(null);
   const [form,       setForm]       = useState({name:"",email:"",phone:""});
+  const [mpLoading,  setMpLoading]  = useState(false);
+  const [mpError,    setMpError]    = useState("");
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm,       setEditForm]       = useState({});
@@ -277,6 +279,28 @@ export default function App() {
     setCustomText(""); setSelected(null); setCartOpen(true);
   };
   const updateQty = (id,d)=>setCart(c=>c.map(i=>i.id===id?{...i,qty:Math.max(0,i.qty+d)}:i).filter(i=>i.qty>0));
+
+  // ── Mercado Pago ─────────────────────────────────────────────────────────
+  const handlePagarMP = async () => {
+    setMpLoading(true);
+    setMpError("");
+    try {
+      const res = await fetch("/.netlify/functions/crear-preferencia", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ cart, form }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.init_point) {
+        throw new Error(data.error || "No se pudo generar el link de pago");
+      }
+      window.location.href = data.init_point;
+    } catch (e) {
+      console.error(e);
+      setMpError("No se pudo iniciar el pago. Intentá de nuevo o escribinos por WhatsApp.");
+    }
+    setMpLoading(false);
+  };
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const handleSelectUser = async (username) => {
@@ -627,8 +651,13 @@ export default function App() {
                       <CreditCard size={18} color="#0284C7" style={{flexShrink:0,marginTop:1}}/>
                       <p style={{fontSize:13,color:"#0369A1",lineHeight:1.6}}>Serás redirigida a Mercado Pago para completar el pago de forma segura.</p>
                     </div>
-                    <button onClick={()=>{setCheckout("ok");setCart([]);}} style={{width:"100%",background:"#009EE3",color:"white",border:"none",borderRadius:8,padding:15,fontWeight:800,fontSize:15,cursor:"pointer",marginBottom:12,fontFamily:"'Nunito Sans',sans-serif",boxShadow:"0 4px 14px rgba(0,158,227,.35)"}}>
-                      💳 Pagar con Mercado Pago
+                    {mpError&&(
+                      <div style={{background:"#FEE2E2",borderRadius:8,padding:"10px 14px",marginBottom:12,display:"flex",gap:8,alignItems:"center",border:"1px solid #FCA5A5"}}>
+                        <AlertCircle size={16} color={B.red}/><span style={{fontSize:13,color:B.red}}>{mpError}</span>
+                      </div>
+                    )}
+                    <button onClick={handlePagarMP} disabled={mpLoading} style={{width:"100%",background:"#009EE3",color:"white",border:"none",borderRadius:8,padding:15,fontWeight:800,fontSize:15,cursor:"pointer",marginBottom:12,fontFamily:"'Nunito Sans',sans-serif",boxShadow:"0 4px 14px rgba(0,158,227,.35)",opacity:mpLoading?.6:1}}>
+                      {mpLoading?"Redirigiendo...":"💳 Pagar con Mercado Pago"}
                     </button>
                   </div>
                 ):(
