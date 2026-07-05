@@ -250,8 +250,6 @@ export default function App() {
     } catch(e) { console.error(e); }
     setDesignSaving(false);
   };
-
-  const D = design; // shorthand for current design values
   const moveProduct = (id, dir) => {
     setProducts(prev => {
       const idx = prev.findIndex(p => p.id === id);
