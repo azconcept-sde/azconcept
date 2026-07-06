@@ -1,12 +1,10 @@
 // netlify/functions/crear-preferencia.js
 //
-// Esta función corre en el servidor de Netlify (nunca en el navegador del cliente).
-// Recibe el carrito, crea una "preferencia de pago" en Mercado Pago usando el
-// Access Token (que vive seguro como variable de entorno) y devuelve la URL
-// real de pago (init_point) para redirigir al comprador.
+// Crea una preferencia de pago en Mercado Pago usando el Access Token
+// (variable de entorno segura). Incluye el orderId como external_reference
+// para poder identificar el pedido cuando la clienta vuelve al sitio.
 
 exports.handler = async (event) => {
-  // Solo aceptamos POST
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ error: "Método no permitido" }) };
   }
@@ -20,13 +18,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { cart, form } = JSON.parse(event.body);
+    const { cart, form, orderId } = JSON.parse(event.body);
 
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
       return { statusCode: 400, body: JSON.stringify({ error: "Carrito vacío o inválido" }) };
     }
 
-    // Armamos los items en el formato que pide Mercado Pago
     const items = cart.map((item) => ({
       title: item.name,
       quantity: item.qty,
@@ -42,6 +39,7 @@ exports.handler = async (event) => {
         name: form?.name || undefined,
         email: form?.email || undefined,
       },
+      external_reference: orderId || undefined,
       back_urls: {
         success: `${siteUrl}/?pago=exito`,
         failure: `${siteUrl}/?pago=fallo`,
@@ -71,10 +69,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        init_point: data.init_point,
-        id: data.id,
-      }),
+      body: JSON.stringify({ init_point: data.init_point, id: data.id }),
     };
   } catch (err) {
     console.error(err);
