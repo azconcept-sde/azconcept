@@ -694,7 +694,7 @@ export default function App() {
   );
 
   // ══ PANTALLA DE ACCESO (antes de entrar a la tienda) ══
-  if (!visitor) {
+  if (!visitor && !loggedUser) {
     return (
       <div style={{fontFamily:"'Nunito Sans',sans-serif",background:B.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Nunito+Sans:wght@400;600;700&display=swap');*{box-sizing:border-box;}input:focus{border-color:#FF8321!important}`}</style>
