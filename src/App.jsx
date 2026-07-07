@@ -725,8 +725,86 @@ export default function App() {
           <button onClick={handleAccessSubmit} disabled={accessLoading} style={{...btnDark,width:"100%",padding:13,borderRadius:8,marginTop:22,opacity:accessLoading?.6:1}}>
             {accessLoading?"Ingresando...":"Entrar a la tienda →"}
           </button>
-          <p style={{fontSize:11,color:B.muted,marginTop:16,lineHeight:1.5}}>Con al menos uno de los dos datos podés continuar. No compartimos tu información con nadie.</p>
+         <p style={{fontSize:11,color:B.muted,marginTop:16,lineHeight:1.5}}>Con al menos uno de los dos datos podés continuar. No compartimos tu información con nadie.</p>
+          <button onClick={openAuth} style={{width:"100%",background:"none",border:"none",color:B.muted,cursor:"pointer",fontSize:12,marginTop:18,display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'Nunito Sans',sans-serif"}}>
+            <Lock size={13}/> Acceso al panel (dueñas)
+          </button>
         </div>
+
+        {authOpen&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+            <div style={{background:B.white,borderRadius:20,maxWidth:400,width:"100%",padding:34}}>
+              {authStep==="select"&&(
+                <>
+                  <div style={{textAlign:"center",marginBottom:26}}>
+                    <div style={{background:`linear-gradient(135deg,${B.orange},${B.pink})`,width:56,height:56,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",color:"white"}}><KeyRound size={24}/></div>
+                    <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:22,color:B.ink,marginBottom:6}}>Acceso al panel</h2>
+                    <p style={{color:B.muted,fontWeight:400,fontSize:13}}>Seleccioná tu usuario para ingresar</p>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                    {Object.entries(USERS).map(([key,u])=>(
+                      <button key={key} className="uc" onClick={()=>handleSelectUser(key)}
+                        style={{background:B.bg,border:`2px solid ${B.line}`,borderRadius:12,padding:"16px 20px",cursor:"pointer",display:"flex",alignItems:"center",gap:14,transition:"transform .15s,box-shadow .15s,border-color .15s",textAlign:"left"}}
+                        onMouseEnter={e=>e.currentTarget.style.borderColor=u.color}
+                        onMouseLeave={e=>e.currentTarget.style.borderColor=B.line}>
+                        <div style={{width:44,height:44,borderRadius:"50%",background:u.grad,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><UserCircle2 size={22} color="white"/></div>
+                        <div>
+                          <p style={{fontWeight:700,fontSize:15,color:u.color}}>{u.handle}</p>
+                          <p style={{fontSize:12,color:B.muted,fontWeight:400,marginTop:2}}>{u.name}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={()=>setAuthOpen(false)} style={{width:"100%",background:"none",border:"none",color:B.muted,cursor:"pointer",fontSize:13,marginTop:20,fontFamily:"'Nunito Sans',sans-serif"}}>Cancelar</button>
+                </>
+              )}
+              {authStep==="create"&&authUser&&(
+                <>
+                  <button onClick={()=>setAuthStep("select")} style={{background:"none",border:"none",color:B.muted,cursor:"pointer",fontSize:13,marginBottom:18,display:"flex",alignItems:"center",gap:6,fontFamily:"'Nunito Sans',sans-serif"}}>← Volver</button>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:22}}>
+                    <div style={{width:44,height:44,borderRadius:"50%",background:USERS[authUser].grad,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><UserCircle2 size={22} color="white"/></div>
+                    <div><p style={{fontWeight:700,fontSize:15,color:USERS[authUser].color}}>{USERS[authUser].handle}</p><p style={{fontSize:12,color:B.muted}}>Primera vez · Creá tu contraseña</p></div>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                    <div><label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:5,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Contraseña</label><PassInput value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthError("");}} show={showPass} setShow={setShowPass} placeholder="Mínimo 4 caracteres"/></div>
+                    <div><label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:5,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Confirmar</label><PassInput value={authConf} onChange={e=>{setAuthConf(e.target.value);setAuthError("");}} show={showConf} setShow={setShowConf} placeholder="Repetí la contraseña" onEnter={handleCreatePassword}/></div>
+                  </div>
+                  {authError&&<p style={{color:B.red,fontSize:12,marginTop:10}}>⚠ {authError}</p>}
+                  <button onClick={handleCreatePassword} disabled={authLoading} style={{...btnDark,width:"100%",padding:13,borderRadius:8,marginTop:20,opacity:authLoading?.6:1}}>{authLoading?"Guardando...":"Crear contraseña →"}</button>
+                </>
+              )}
+              {authStep==="verify"&&authUser&&(
+                <>
+                  <button onClick={()=>setAuthStep("select")} style={{background:"none",border:"none",color:B.muted,cursor:"pointer",fontSize:13,marginBottom:18,display:"flex",alignItems:"center",gap:6,fontFamily:"'Nunito Sans',sans-serif"}}>← Volver</button>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+                    <div style={{width:44,height:44,borderRadius:"50%",background:USERS[authUser].grad,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><UserCircle2 size={22} color="white"/></div>
+                    <div><p style={{fontWeight:700,fontSize:15,color:USERS[authUser].color}}>{USERS[authUser].handle}</p><p style={{fontSize:12,color:B.muted}}>{USERS[authUser].name}</p></div>
+                  </div>
+                  <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:8,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Contraseña</label>
+                  <PassInput value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthError("");}} show={showPass} setShow={setShowPass} placeholder="Tu contraseña" onEnter={handleVerifyPassword}/>
+                  {authError&&<p style={{color:B.red,fontSize:12,marginTop:8}}>⚠ {authError}</p>}
+                  <button onClick={handleVerifyPassword} disabled={authLoading} style={{...btnDark,width:"100%",padding:13,borderRadius:8,marginTop:20,opacity:authLoading?.6:1}}>{authLoading?"Verificando...":"Ingresar →"}</button>
+                  <button onClick={()=>setAuthStep("change")} style={{width:"100%",background:"none",border:"none",color:B.muted,cursor:"pointer",fontSize:12,marginTop:12,fontFamily:"'Nunito Sans',sans-serif"}}>Cambiar contraseña</button>
+                </>
+              )}
+              {authStep==="change"&&authUser&&(
+                <>
+                  <button onClick={()=>setAuthStep("verify")} style={{background:"none",border:"none",color:B.muted,cursor:"pointer",fontSize:13,marginBottom:18,display:"flex",alignItems:"center",gap:6,fontFamily:"'Nunito Sans',sans-serif"}}>← Volver</button>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:22}}>
+                    <div style={{width:44,height:44,borderRadius:"50%",background:USERS[authUser].grad,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><UserCircle2 size={22} color="white"/></div>
+                    <div><p style={{fontWeight:700,fontSize:15,color:USERS[authUser].color}}>{USERS[authUser].handle}</p><p style={{fontSize:12,color:B.muted}}>Cambiar contraseña</p></div>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                    <div><label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:5,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Nueva contraseña</label><PassInput value={authPass} onChange={e=>{setAuthPass(e.target.value);setAuthError("");}} show={showPass} setShow={setShowPass} placeholder="Mínimo 4 caracteres"/></div>
+                    <div><label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:5,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Confirmar</label><PassInput value={authConf} onChange={e=>{setAuthConf(e.target.value);setAuthError("");}} show={showConf} setShow={setShowConf} placeholder="Repetí la contraseña" onEnter={handleChangePassword}/></div>
+                  </div>
+                  {authError&&<p style={{color:B.red,fontSize:12,marginTop:10}}>⚠ {authError}</p>}
+                  <button onClick={handleChangePassword} disabled={authLoading} style={{...btnDark,width:"100%",padding:13,borderRadius:8,marginTop:20,opacity:authLoading?.6:1}}>{authLoading?"Guardando...":"Guardar nueva contraseña"}</button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
