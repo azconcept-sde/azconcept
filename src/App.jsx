@@ -307,16 +307,6 @@ export default function App() {
   const [bankSaved,  setBankSaved]  = useState(false);
 
   const [videos,        setVideos]        = useState([]);
-  const [bankSaving, setBankSaving] = useState(false);
-  const [bankSaved,  setBankSaved]  = useState(false);
-
-  const [videos,        setVideos]        = useState([]);
-  const [videoTitle,    setVideoTitle]    = useState("");
-  const [videoLink,     setVideoLink]     = useState("");
-  const [videoFile,     setVideoFile]     = useState(null);
-  const [videoUploading,setVideoUploading]= useState(false);
-  const [videoError,    setVideoError]    = useState("");
-  const videoFileInputRef = useRef();
   const [videoTitle,    setVideoTitle]    = useState("");
   const [videoLink,     setVideoLink]     = useState("");
   const [videoFile,     setVideoFile]     = useState(null);
