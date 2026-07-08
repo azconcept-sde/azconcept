@@ -446,17 +446,59 @@ export default function App() {
     setConfigSaving(false);
   };
 
-  const saveBankInfo = async () => {
-    setBankSaving(true);
-    try {
-      await sbSetConfig("bankInfo", JSON.stringify(bankForm));
-      setBankInfo(bankForm);
-      setBankSaved(true);
-      setTimeout(()=>setBankSaved(false), 2500);
-    } catch(e) { console.error(e); }
-    setBankSaving(false);
+const handleVideoFileChange = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 50*1024*1024){ setVideoError("El video no puede superar 50MB."); return; }
+    setVideoFile(file);
+    setVideoError("");
   };
 
+  const handleUploadVideoFile = async () => {
+    if(!videoFile){ setVideoError("Elegí un archivo de video."); return; }
+    setVideoUploading(true);
+    setVideoError("");
+    try {
+      const url = await sbUploadVideoFile(videoFile);
+      const saved = await sbCreateVideoRecord({ type:"upload", url, title: videoTitle || null });
+      setVideos(v => [saved, ...v]);
+      setVideoFile(null);
+      setVideoTitle("");
+      if (videoFileInputRef.current) videoFileInputRef.current.value = "";
+    } catch(e) {
+      console.error(e);
+      setVideoError("No se pudo subir el video. Probá con un archivo más liviano.");
+    }
+    setVideoUploading(false);
+  };
+
+  const handleAddVideoLink = async () => {
+    if(!videoLink.trim()){ setVideoError("Pegá un link válido."); return; }
+    setVideoUploading(true);
+    setVideoError("");
+    try {
+      const saved = await sbCreateVideoRecord({ type:"link", url: videoLink.trim(), title: videoTitle || null });
+      setVideos(v => [saved, ...v]);
+      setVideoLink("");
+      setVideoTitle("");
+    } catch(e) {
+      console.error(e);
+      setVideoError("No se pudo agregar el link.");
+    }
+    setVideoUploading(false);
+  };
+
+  const handleDeleteVideo = async (id) => {
+    try {
+      await sbDeleteVideo(id);
+      setVideos(v => v.filter(x => x.id !== id));
+    } catch(e) { console.error(e); }
+  };
+
+  const getYoutubeEmbed = (url) => {
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+    return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+  };
   const saveDesign = async () => {
     setDesignSaving(true);
     try {
