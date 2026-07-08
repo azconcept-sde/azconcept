@@ -506,6 +506,16 @@ const handleVideoFileChange = (e) => {
     const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
     return m ? `https://www.youtube.com/embed/${m[1]}` : null;
   };
+  const saveBankInfo = async () => {
+    setBankSaving(true);
+    try {
+      await sbSetConfig("bankInfo", JSON.stringify(bankForm));
+      setBankInfo(bankForm);
+      setBankSaved(true);
+      setTimeout(()=>setBankSaved(false), 2500);
+    } catch(e) { console.error(e); }
+    setBankSaving(false);
+  };
   const saveDesign = async () => {
     setDesignSaving(true);
     try {
