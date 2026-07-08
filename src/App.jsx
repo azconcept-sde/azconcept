@@ -303,6 +303,13 @@ export default function App() {
   const DEFAULT_BANK = { alias:"azconcept", cbu:"", titular:"" };
   const [bankInfo,   setBankInfo]   = useState(DEFAULT_BANK);
   const [bankForm,   setBankForm]   = useState(DEFAULT_BANK);
+  const [bankSaving, setBankSaving] = useState(false);
+  const [bankSaved,  setBankSaved]  = useState(false);
+
+  const [videos,        setVideos]        = useState([]);
+  ...
+  const [bankInfo,   setBankInfo]   = useState(DEFAULT_BANK);
+  const [bankForm,   setBankForm]   = useState(DEFAULT_BANK);
   const [videos,        setVideos]        = useState([]);
   const [videoTitle,    setVideoTitle]    = useState("");
   const [videoLink,     setVideoLink]     = useState("");
