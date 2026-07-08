@@ -52,6 +52,39 @@ const fmt = n => new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",
 const SB_URL = "https://fwynwohdkwpnqxflwqcj.supabase.co/rest/v1";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3eW53b2hka3dwbnF4Zmx3cWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDEwMTcsImV4cCI6MjA5ODA3NzAxN30.BwgpwPewKQPl4yJ77q1qjYTf5OXgWBX0XRUzyN4yhb4";
 const SB_H = { "Content-Type":"application/json", "apikey":SB_KEY, "Authorization":`Bearer ${SB_KEY}` };
+const SB_BASE = "https://fwynwohdkwpnqxflwqcj.supabase.co";
+
+async function sbGetVideos() {
+  const r = await fetch(`${SB_URL}/videos?select=*&order=created_at.desc`, { headers: SB_H });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbCreateVideoRecord(data) {
+  const r = await fetch(`${SB_URL}/videos`, {
+    method:"POST", headers:{...SB_H,"Prefer":"return=representation"},
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const rows = await r.json();
+  return rows[0];
+}
+
+async function sbDeleteVideo(id) {
+  const r = await fetch(`${SB_URL}/videos?id=eq.${id}`, { method:"DELETE", headers: SB_H });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+async function sbUploadVideoFile(file) {
+  const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+  const r = await fetch(`${SB_BASE}/storage/v1/object/videos/${filename}`, {
+    method:"POST",
+    headers:{ "apikey":SB_KEY, "Authorization":`Bearer ${SB_KEY}`, "Content-Type": file.type || "video/mp4" },
+    body: file
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return `${SB_BASE}/storage/v1/object/public/videos/${filename}`;
+}
 
 async function sbGetProducts() {
   const r = await fetch(`${SB_URL}/products?select=*&order=id`, { headers: SB_H });
