@@ -414,7 +414,7 @@ export default function App() {
     })();
   },[]);
 
-  // ── Cargar datos reales del panel (pedidos y visitantes) ────────────────────
+// ── Cargar datos reales del panel (pedidos y visitantes) ────────────────────
   useEffect(()=>{
     if (loggedUser) {
       setPanelDataLoading(true);
@@ -422,10 +422,18 @@ export default function App() {
         try { setOrders(await sbGetOrders()); } catch(e){ console.error(e); }
         try { setVisitors(await sbGetVisitors()); } catch(e){ console.error(e); }
         try { setVisitsCount(await sbGetVisitsCount()); } catch(e){ console.error(e); }
+        try { setVideos(await sbGetVideos()); } catch(e){ console.error(e); }
         setPanelDataLoading(false);
       })();
     }
   },[loggedUser]);
+
+  // ── Cargar videos para mostrar en la tienda (visible para todos) ────────────
+  useEffect(()=>{
+    if (visitor) {
+      sbGetVideos().then(setVideos).catch(e=>console.error(e));
+    }
+  },[visitor]);
 
   const saveMpKey = async (key) => {
     setConfigSaving(true);
