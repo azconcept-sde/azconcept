@@ -1558,6 +1558,63 @@ const handleVideoFileChange = (e) => {
             </>
           )}
 
+{panelTab==="videos"&&(
+            <div style={{maxWidth:700}}>
+              <div style={{background:B.white,borderRadius:14,padding:24,marginBottom:20,boxShadow:"0 2px 14px rgba(0,0,0,0.06)"}}>
+                <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,marginBottom:16}}>🎬 Agregar video</h3>
+
+                <div>
+                  <label style={{fontSize:11,fontWeight:700,display:"block",marginBottom:6,color:B.muted,textTransform:"uppercase",letterSpacing:.8}}>Título (opcional)</label>
+                  <input value={videoTitle} onChange={e=>setVideoTitle(e.target.value)} placeholder="Ej: Cómo hacemos las fundas" style={{...inp,marginBottom:18}}/>
+                </div>
+
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:18}}>
+                  <div style={{border:`2px dashed ${B.line}`,borderRadius:10,padding:16,textAlign:"center"}}>
+                    <Upload size={22} color={B.orange} style={{marginBottom:8}}/>
+                    <p style={{fontSize:12,fontWeight:700,marginBottom:8}}>Subir archivo</p>
+                    <input ref={videoFileInputRef} type="file" accept="video/*" onChange={handleVideoFileChange} style={{fontSize:11,marginBottom:10,width:"100%"}}/>
+                    <button onClick={handleUploadVideoFile} disabled={videoUploading||!videoFile} style={{...btnDark,width:"100%",padding:9,borderRadius:7,fontSize:12,opacity:(videoUploading||!videoFile)?.5:1}}>
+                      {videoUploading?"Subiendo...":"Subir"}
+                    </button>
+                    <p style={{fontSize:10,color:B.muted,marginTop:6}}>Máx 50MB</p>
+                  </div>
+                  <div style={{border:`2px dashed ${B.line}`,borderRadius:10,padding:16,textAlign:"center"}}>
+                    <Link2 size={22} color={B.pink} style={{marginBottom:8}}/>
+                    <p style={{fontSize:12,fontWeight:700,marginBottom:8}}>Pegar link</p>
+                    <input value={videoLink} onChange={e=>setVideoLink(e.target.value)} placeholder="Instagram, TikTok, YouTube..." style={{...inp,fontSize:11,marginBottom:10}}/>
+                    <button onClick={handleAddVideoLink} disabled={videoUploading||!videoLink.trim()} style={{...btnDark,width:"100%",padding:9,borderRadius:7,fontSize:12,opacity:(videoUploading||!videoLink.trim())?.5:1}}>
+                      {videoUploading?"Agregando...":"Agregar"}
+                    </button>
+                  </div>
+                </div>
+
+                {videoError&&(
+                  <div style={{background:"#FEE2E2",borderRadius:8,padding:"10px 14px",display:"flex",gap:8,alignItems:"center",border:"1px solid #FCA5A5"}}>
+                    <AlertCircle size={16} color={B.red}/><span style={{fontSize:13,color:B.red}}>{videoError}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{background:B.white,borderRadius:14,padding:24,boxShadow:"0 2px 14px rgba(0,0,0,0.06)"}}>
+                <h3 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:18,marginBottom:16}}>Videos cargados ({videos.length})</h3>
+                {videos.length===0?(
+                  <p style={{color:B.muted,fontSize:13}}>Todavía no cargaste videos.</p>
+                ):(
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {videos.map(v=>(
+                      <div key={v.id} style={{display:"flex",alignItems:"center",gap:12,background:B.bg,borderRadius:10,padding:"10px 14px",border:`1px solid ${B.line}`}}>
+                        {v.type==="upload"?<Upload size={16} color={B.orange}/>:<Link2 size={16} color={B.pink}/>}
+                        <span style={{flex:1,fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title || v.url}</span>
+                        <a href={v.url} target="_blank" rel="noreferrer" style={{fontSize:12,color:B.muted}}>Ver</a>
+                        <button onClick={()=>handleDeleteVideo(v.id)} style={{background:"none",border:"none",cursor:"pointer",color:B.red,display:"flex"}}><Trash2 size={15}/></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {panelTab==="costos"&&(
             <>
               <div style={{background:B.white,borderRadius:14,overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,.06)",marginBottom:24,border:`1px solid ${B.line}`}}>
