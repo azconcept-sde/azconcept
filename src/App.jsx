@@ -303,8 +303,13 @@ export default function App() {
   const DEFAULT_BANK = { alias:"azconcept", cbu:"", titular:"" };
   const [bankInfo,   setBankInfo]   = useState(DEFAULT_BANK);
   const [bankForm,   setBankForm]   = useState(DEFAULT_BANK);
-  const [bankSaving, setBankSaving] = useState(false);
-  const [bankSaved,  setBankSaved]  = useState(false);
+  const [videos,        setVideos]        = useState([]);
+  const [videoTitle,    setVideoTitle]    = useState("");
+  const [videoLink,     setVideoLink]     = useState("");
+  const [videoFile,     setVideoFile]     = useState(null);
+  const [videoUploading,setVideoUploading]= useState(false);
+  const [videoError,    setVideoError]    = useState("");
+  const videoFileInputRef = useRef();
 
   const DEFAULT_DESIGN = {
     colorOrange: "#FF8321", colorPink: "#FF63CF",
