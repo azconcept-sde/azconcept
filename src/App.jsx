@@ -1374,7 +1374,7 @@ const handleVideoFileChange = (e) => {
           </div>
 
           <div style={{display:"flex",gap:4,background:B.arena,borderRadius:12,padding:5,marginBottom:28,width:"fit-content",flexWrap:"wrap"}}>
-            {[["metricas","📊 Métricas"],["visitantes","👥 Visitantes"],["pedidos","🧾 Pedidos"],["productos","📦 Productos"],["costos","💰 Costos"],["diseno","🎨 Diseño"],["config","⚙️ Configuración"]].map(([id,label])=>(
+  {[["metricas","📊 Métricas"],["visitantes","👥 Visitantes"],["pedidos","🧾 Pedidos"],["productos","📦 Productos"],["videos","🎬 Videos"],["costos","💰 Costos"],["diseno","🎨 Diseño"],["config","⚙️ Configuración"]].map(([id,label])=>(
               <button key={id} onClick={()=>setPanelTab(id)}
                 style={{padding:"9px 20px",borderRadius:8,border:"none",background:panelTab===id?B.ink:"none",fontWeight:panelTab===id?700:500,color:panelTab===id?B.white:B.ink,cursor:"pointer",fontSize:13,transition:"all .15s",fontFamily:"'Nunito Sans',sans-serif"}}>
                 {label}
