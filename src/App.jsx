@@ -4,7 +4,7 @@ import {
   ShoppingCart, X, TrendingUp, DollarSign, Eye, Plus, Minus,
   Check, Lock, Package, Users, Instagram, KeyRound, UserCircle2,
   LogOut, Eye as EyeIcon, EyeOff, Pencil, Trash2, ImagePlus,
-  Save, AlertCircle, CreditCard, Landmark, Mail, MessageCircle, Truck
+Save, AlertCircle, CreditCard, Landmark, Mail, MessageCircle, Truck, Video, Link2, Upload
 } from "lucide-react";
 
 const B = {
