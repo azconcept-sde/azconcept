@@ -1008,12 +1008,12 @@ const handleVideoFileChange = (e) => {
                   const ytEmbed = v.type==="link" ? getYoutubeEmbed(v.url) : null;
                   return (
                     <div key={v.id} style={{background:B.white,borderRadius:14,overflow:"hidden",border:`1px solid ${B.line}`,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-                      {v.type==="upload"?(
-                        <video controls src={v.url} style={{width:"100%",height:220,objectFit:"cover",background:"#000"}}/>
+{v.type==="upload"?(
+                        <video controls src={v.url} style={{width:"100%",aspectRatio:"9/16",objectFit:"cover",background:"#000",display:"block"}}/>
                       ):ytEmbed?(
-                        <iframe src={ytEmbed} title={v.title||"video"} style={{width:"100%",height:220,border:"none"}} allowFullScreen/>
+                        <iframe src={ytEmbed} title={v.title||"video"} style={{width:"100%",aspectRatio:"9/16",border:"none",display:"block"}} allowFullScreen/>
                       ):(
-                        <a href={v.url} target="_blank" rel="noreferrer" style={{height:220,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,background:`linear-gradient(135deg,${B.orange},${B.pink})`,color:"white",textDecoration:"none"}}>
+                        <a href={v.url} target="_blank" rel="noreferrer" style={{width:"100%",aspectRatio:"9/16",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,background:`linear-gradient(135deg,${B.orange},${B.pink})`,color:"white",textDecoration:"none"}}>
                           <Video size={36}/>
                           <span style={{fontSize:13,fontWeight:700}}>Ver video ↗</span>
                         </a>
