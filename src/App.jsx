@@ -1003,7 +1003,7 @@ const handleVideoFileChange = (e) => {
 {videos.length>0&&(
             <section style={{padding:"20px 28px 60px",maxWidth:1140,margin:"0 auto"}}>
               <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:26,textAlign:"center",marginBottom:28,color:B.ink}}>🎥 Nuestros videos</h2>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:20}}>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:20,maxWidth:900,margin:"0 auto"}}>
                 {videos.map(v=>{
                   const ytEmbed = v.type==="link" ? getYoutubeEmbed(v.url) : null;
                   return (
